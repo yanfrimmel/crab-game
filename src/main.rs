@@ -6,7 +6,7 @@ use crate::controls::player_movement;
 use crate::objects::Crab;
 use macroquad::prelude::*;
 
-const SCALE: f32 = 500.0;
+const SCALE: f32 = 1500.0;
 
 #[macroquad::main("crab-game")]
 async fn main() {
