@@ -4,6 +4,7 @@ mod objects;
 
 use crate::controls::player_movement;
 use crate::objects::Crab;
+use crate::objects::Drawable;
 use macroquad::prelude::*;
 
 const SCALE: f32 = 1500.0;
@@ -26,7 +27,7 @@ async fn main() {
             30.0,
             DARKGRAY,
         );
-        crab.draw_crab();
+        crab.draw();
         player_movement(&mut crab, delta);
         next_frame().await
     }
