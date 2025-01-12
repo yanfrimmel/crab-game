@@ -11,6 +11,13 @@ pub struct Crab {
     pub leg_rotate_speed: f32,
 }
 
+pub struct Block {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
+}
+
 impl Crab {
     pub fn new(scale: f32, position: Vec2) -> Self {
         Self {
@@ -67,5 +74,22 @@ impl Drawable for Crab {
         draw_triangle(self.torso.0, self.torso.1, self.torso.2, RED);
         draw_triangle(self.left_leg.0, self.left_leg.1, self.left_leg.2, RED);
         draw_triangle(self.right_leg.0, self.right_leg.1, self.right_leg.2, RED);
+    }
+}
+
+impl Block {
+    pub fn new(scale: f32, position: Vec2) -> Self {
+        Self {
+            x: position.x,
+            y: position.y,
+            h: scale * 0.1,
+            w: scale * 0.6,
+        }
+    }
+}
+
+impl Drawable for Block {
+    fn draw(&mut self) {
+        draw_rectangle(self.x, self.y, self.w, self.h, GREEN);
     }
 }

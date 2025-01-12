@@ -6,6 +6,7 @@ use crate::controls::player_movement;
 use crate::objects::Crab;
 use crate::objects::Drawable;
 use macroquad::prelude::*;
+use objects::Block;
 
 const SCALE: f32 = 1500.0;
 
@@ -14,6 +15,11 @@ async fn main() {
     let mut crab = Crab::new(
         SCALE,
         Vec2::new(screen_width() / 2.0, screen_height() / 2.0),
+    );
+
+    let mut block = Block::new(
+        SCALE,
+        Vec2::new(screen_width() / 2.0, screen_height() * 2.0 / 3.0),
     );
 
     loop {
@@ -27,6 +33,7 @@ async fn main() {
             30.0,
             DARKGRAY,
         );
+        block.draw();
         crab.draw();
         player_movement(&mut crab, delta);
         next_frame().await
