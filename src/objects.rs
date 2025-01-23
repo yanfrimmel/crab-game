@@ -40,20 +40,6 @@ impl Crab {
         }
     }
 
-    // pub fn set_velocity_x(&mut self, velocity: f32) {
-    //     self.torso.0.x += velocity;
-    //     self.torso.1.x += velocity;
-    //     self.torso.2.x += velocity;
-    //
-    //     self.left_leg.0.x += velocity;
-    //     self.left_leg.1.x += velocity;
-    //     self.left_leg.2.x += velocity;
-    //
-    //     self.right_leg.0.x += velocity;
-    //     self.right_leg.1.x += velocity;
-    //     self.right_leg.2.x += velocity;
-    // }
-
     pub fn set_velocity_y(&mut self, velocity: f32) {
         self.torso.0.y += velocity;
         self.torso.1.y += velocity;
@@ -64,7 +50,7 @@ impl Crab {
         self.left_leg.2.y += velocity;
 
         self.right_leg.0.y += velocity;
-        self.right_leg.1.y += velocity;
+        self.right_leg.0.y += velocity;
         self.right_leg.2.y += velocity;
     }
 }

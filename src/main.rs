@@ -35,7 +35,7 @@ async fn main() {
         );
         block.draw();
         crab.draw();
-        player_movement(&mut crab, delta);
+        player_movement(&mut crab, &block, delta);
         next_frame().await
     }
 }
