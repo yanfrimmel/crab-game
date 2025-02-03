@@ -1,7 +1,7 @@
 use crate::helpers::triangle_rectangle_intersection;
 use macroquad::prelude::*;
 
-const GRAVITY: f32 = 500.0; // Acceleration due to gravity (pixels per second squared)
+const GRAVITY: f32 = 200.0; // Acceleration due to gravity (pixels per second squared)
 
 pub trait Drawable {
     fn draw(&mut self);
@@ -12,7 +12,8 @@ pub struct Crab {
     pub left_leg: (Vec2, Vec2, Vec2),
     pub right_leg: (Vec2, Vec2, Vec2),
     pub leg_rotate_speed: f32,
-    pub velocity_y: f32, // Vertical velocity
+    pub velocity_y: f32,
+    pub falling: bool,
 }
 
 pub struct Block {
@@ -42,10 +43,11 @@ impl Crab {
             ),
             leg_rotate_speed: 180.0,
             velocity_y: 0.0, // Initialize vertical velocity to 0
+            falling: false,
         }
     }
 
-    pub fn set_velocity_y(&mut self, velocity: f32) {
+    pub fn update_position_y(&mut self, velocity: f32) {
         self.torso.0.y += velocity;
         self.torso.1.y += velocity;
         self.torso.2.y += velocity;
@@ -101,80 +103,78 @@ impl Crab {
 
         // Check if the new position collides with the Block
         let block_bounds = (block.x, block.y, block.w, block.h);
-        if triangle_rectangle_intersection(new_torso, block_bounds) {
-            // Collision detected: stop falling and adjust position
-            self.velocity_y = 0.0; // Stop falling
-            let crab_bottom = self.torso.0.y.max(self.torso.1.y).max(self.torso.2.y);
-            let block_top = block.y;
-            let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
-            self.set_velocity_y(offset);
-        } else {
-            // No collision: update position based on velocity
-            self.set_velocity_y(self.velocity_y * delta);
+        // Handle collision for the left leg
+        if self.check_block_collision(new_left_leg, block_bounds, delta) {
+            return;
         }
-
-        if triangle_rectangle_intersection(new_left_leg, block_bounds) {
-            // Collision detected: stop falling and adjust position
-            self.velocity_y = 0.0; // Stop falling
-            let crab_bottom = self.torso.0.y.max(self.left_leg.1.y).max(self.left_leg.2.y);
-            let block_top = block.y;
-            let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
-            self.set_velocity_y(offset);
-        } else {
-            // No collision: update position based on velocity
-            self.set_velocity_y(self.velocity_y * delta);
+        // Handle collision for the right leg
+        if self.check_block_collision(new_right_leg, block_bounds, delta) {
+            return;
         }
-
-        if triangle_rectangle_intersection(new_right_leg, block_bounds) {
-            // Collision detected: stop falling and adjust position
-            self.velocity_y = 0.0; // Stop falling
-            let crab_bottom = self
-                .torso
-                .0
-                .y
-                .max(self.right_leg.1.y)
-                .max(self.right_leg.2.y);
-            let block_top = block.y;
-            let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
-            self.set_velocity_y(offset);
-        } else {
-            // No collision: update position based on velocity
-            self.set_velocity_y(self.velocity_y * delta);
-        }
-
-        // Check if the Crab has hit the ground
-        let ground_level = screen_height();
-        let crab_bottom_torso = self.torso.0.y.max(self.torso.1.y).max(self.torso.2.y);
-
-        if crab_bottom_torso >= ground_level {
-            self.velocity_y = 0.0; // Stop falling
-            self.set_velocity_y(ground_level - crab_bottom_torso); // Snap to the ground
+        // Handle collision for the torso
+        if self.check_block_collision(new_torso, block_bounds, delta) {
             return;
         }
 
+        // Check if the Crab has hit the ground
+        // Check if the Crab's torso has hit the ground
+        let crab_bottom_torso = self.torso.0.y.max(self.torso.1.y).max(self.torso.2.y);
+        if self.check_ground_collision(crab_bottom_torso) {
+            return;
+        }
+
+        // Check if the Crab's left leg has hit the ground
         let crab_bottom_left_leg = self
             .left_leg
             .0
             .y
             .max(self.left_leg.1.y)
             .max(self.left_leg.2.y);
-
-        if crab_bottom_left_leg >= ground_level {
-            self.velocity_y = 0.0; // Stop falling
-            self.set_velocity_y(ground_level - crab_bottom_left_leg); // Snap to the ground
+        if self.check_ground_collision(crab_bottom_left_leg) {
             return;
         }
 
+        // Check if the Crab's right leg has hit the ground
         let crab_bottom_right_leg = self
-            .left_leg
+            .right_leg
             .0
             .y
             .max(self.right_leg.1.y)
             .max(self.right_leg.2.y);
+        self.check_ground_collision(crab_bottom_right_leg);
+    }
 
-        if crab_bottom_right_leg >= ground_level {
+    fn check_block_collision(
+        &mut self,
+        new_part: (Vec2, Vec2, Vec2), // New position of the part (triangle)
+        block_bounds: (f32, f32, f32, f32), // Block's bounds (x, y, width, height)
+        delta: f32,                   // Delta time for velocity calculation
+    ) -> bool {
+        if triangle_rectangle_intersection(new_part, block_bounds) {
+            // Collision detected: stop falling and adjust position
             self.velocity_y = 0.0; // Stop falling
-            self.set_velocity_y(ground_level - crab_bottom_right_leg); // Snap to the ground
+            self.falling = false;
+            true
+        } else {
+            // No collision: update position based on velocity
+            self.update_position_y(self.velocity_y * delta);
+            self.falling = true;
+            false
+        }
+    }
+
+    // Check if a part of the Crab has hit the ground and adjust its state
+    fn check_ground_collision(&mut self, part_bottom: f32) -> bool {
+        let ground_level = screen_height();
+
+        if part_bottom >= ground_level {
+            // Collision detected: stop falling and adjust position
+            self.velocity_y = 0.0; // Stop falling
+            self.falling = false;
+            self.update_position_y(ground_level - part_bottom); // Snap to the ground
+            true // Collision occurred
+        } else {
+            false // No collision
         }
     }
 }

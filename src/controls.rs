@@ -2,13 +2,13 @@ use crate::helpers::triangle_rectangle_intersection;
 use crate::objects::Block;
 use crate::objects::Crab;
 use macroquad::prelude::Vec2;
-use macroquad::prelude::{is_key_down, screen_height, KeyCode};
+use macroquad::prelude::{is_key_down, KeyCode};
 use std::f32::consts::PI;
 
-const SPEED: f32 = 400.0;
+const SPEED: f32 = 7000.0;
 
 pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
-    let velocity = delta * SPEED;
+    let distance = delta * SPEED;
 
     // Get the Block's bounds
     let block_bounds = (block.x, block.y, block.w, block.h);
@@ -68,29 +68,16 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
         }
     }
 
-    // Handle vertical movement (Up and Down keys) with collision detection
-    if is_key_down(KeyCode::Up) && crab.torso.0.y > 0.0 {
+    // Jump
+    if is_key_down(KeyCode::Space) && !crab.falling {
         let new_torso = (
-            Vec2::new(crab.torso.0.x, crab.torso.0.y - velocity),
-            Vec2::new(crab.torso.1.x, crab.torso.1.y - velocity),
-            Vec2::new(crab.torso.2.x, crab.torso.2.y - velocity),
+            Vec2::new(crab.torso.0.x, crab.torso.0.y - distance),
+            Vec2::new(crab.torso.1.x, crab.torso.1.y - distance),
+            Vec2::new(crab.torso.2.x, crab.torso.2.y - distance),
         );
 
         if !triangle_rectangle_intersection(new_torso, block_bounds) {
-            crab.set_velocity_y(-velocity);
-        } else {
-            println!("Torso movement blocked by collision!");
-        }
-    }
-    if is_key_down(KeyCode::Down) && crab.torso.2.y < screen_height() {
-        let new_torso = (
-            Vec2::new(crab.torso.0.x, crab.torso.0.y + velocity),
-            Vec2::new(crab.torso.1.x, crab.torso.1.y + velocity),
-            Vec2::new(crab.torso.2.x, crab.torso.2.y + velocity),
-        );
-
-        if !triangle_rectangle_intersection(new_torso, block_bounds) {
-            crab.set_velocity_y(velocity);
+            crab.update_position_y(-distance);
         } else {
             println!("Torso movement blocked by collision!");
         }
