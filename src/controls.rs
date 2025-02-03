@@ -2,10 +2,10 @@ use crate::helpers::triangle_rectangle_intersection;
 use crate::objects::Block;
 use crate::objects::Crab;
 use macroquad::prelude::Vec2;
-use macroquad::prelude::{is_key_down, screen_height, screen_width, KeyCode};
+use macroquad::prelude::{is_key_down, screen_height, KeyCode};
 use std::f32::consts::PI;
 
-const SPEED: f32 = 200.0;
+const SPEED: f32 = 400.0;
 
 pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     let velocity = delta * SPEED;

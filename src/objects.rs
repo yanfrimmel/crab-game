@@ -1,4 +1,7 @@
+use crate::helpers::triangle_rectangle_intersection;
 use macroquad::prelude::*;
+
+const GRAVITY: f32 = 500.0; // Acceleration due to gravity (pixels per second squared)
 
 pub trait Drawable {
     fn draw(&mut self);
@@ -9,6 +12,7 @@ pub struct Crab {
     pub left_leg: (Vec2, Vec2, Vec2),
     pub right_leg: (Vec2, Vec2, Vec2),
     pub leg_rotate_speed: f32,
+    pub velocity_y: f32, // Vertical velocity
 }
 
 pub struct Block {
@@ -37,6 +41,7 @@ impl Crab {
                 Vec2::new(0.1625, 0.175) * scale + position,
             ),
             leg_rotate_speed: 180.0,
+            velocity_y: 0.0, // Initialize vertical velocity to 0
         }
     }
 
@@ -50,8 +55,127 @@ impl Crab {
         self.left_leg.2.y += velocity;
 
         self.right_leg.0.y += velocity;
-        self.right_leg.0.y += velocity;
+        self.right_leg.1.y += velocity;
         self.right_leg.2.y += velocity;
+    }
+
+    pub fn apply_gravity(&mut self, delta: f32, block: &Block) {
+        self.velocity_y += GRAVITY * delta; // Update velocity based on gravity
+
+        // Calculate the new position of the Crab's torso
+        let new_torso = (
+            Vec2::new(self.torso.0.x, self.torso.0.y + self.velocity_y * delta),
+            Vec2::new(self.torso.1.x, self.torso.1.y + self.velocity_y * delta),
+            Vec2::new(self.torso.2.x, self.torso.2.y + self.velocity_y * delta),
+        );
+
+        let new_left_leg = (
+            Vec2::new(
+                self.left_leg.0.x,
+                self.left_leg.0.y + self.velocity_y * delta,
+            ),
+            Vec2::new(
+                self.left_leg.1.x,
+                self.left_leg.1.y + self.velocity_y * delta,
+            ),
+            Vec2::new(
+                self.left_leg.2.x,
+                self.left_leg.2.y + self.velocity_y * delta,
+            ),
+        );
+
+        let new_right_leg = (
+            Vec2::new(
+                self.right_leg.0.x,
+                self.right_leg.0.y + self.velocity_y * delta,
+            ),
+            Vec2::new(
+                self.right_leg.1.x,
+                self.right_leg.1.y + self.velocity_y * delta,
+            ),
+            Vec2::new(
+                self.right_leg.2.x,
+                self.right_leg.2.y + self.velocity_y * delta,
+            ),
+        );
+
+        // Check if the new position collides with the Block
+        let block_bounds = (block.x, block.y, block.w, block.h);
+        if triangle_rectangle_intersection(new_torso, block_bounds) {
+            // Collision detected: stop falling and adjust position
+            self.velocity_y = 0.0; // Stop falling
+            let crab_bottom = self.torso.0.y.max(self.torso.1.y).max(self.torso.2.y);
+            let block_top = block.y;
+            let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
+            self.set_velocity_y(offset);
+        } else {
+            // No collision: update position based on velocity
+            self.set_velocity_y(self.velocity_y * delta);
+        }
+
+        if triangle_rectangle_intersection(new_left_leg, block_bounds) {
+            // Collision detected: stop falling and adjust position
+            self.velocity_y = 0.0; // Stop falling
+            let crab_bottom = self.torso.0.y.max(self.left_leg.1.y).max(self.left_leg.2.y);
+            let block_top = block.y;
+            let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
+            self.set_velocity_y(offset);
+        } else {
+            // No collision: update position based on velocity
+            self.set_velocity_y(self.velocity_y * delta);
+        }
+
+        if triangle_rectangle_intersection(new_right_leg, block_bounds) {
+            // Collision detected: stop falling and adjust position
+            self.velocity_y = 0.0; // Stop falling
+            let crab_bottom = self
+                .torso
+                .0
+                .y
+                .max(self.right_leg.1.y)
+                .max(self.right_leg.2.y);
+            let block_top = block.y;
+            let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
+            self.set_velocity_y(offset);
+        } else {
+            // No collision: update position based on velocity
+            self.set_velocity_y(self.velocity_y * delta);
+        }
+
+        // Check if the Crab has hit the ground
+        let ground_level = screen_height();
+        let crab_bottom_torso = self.torso.0.y.max(self.torso.1.y).max(self.torso.2.y);
+
+        if crab_bottom_torso >= ground_level {
+            self.velocity_y = 0.0; // Stop falling
+            self.set_velocity_y(ground_level - crab_bottom_torso); // Snap to the ground
+            return;
+        }
+
+        let crab_bottom_left_leg = self
+            .left_leg
+            .0
+            .y
+            .max(self.left_leg.1.y)
+            .max(self.left_leg.2.y);
+
+        if crab_bottom_left_leg >= ground_level {
+            self.velocity_y = 0.0; // Stop falling
+            self.set_velocity_y(ground_level - crab_bottom_left_leg); // Snap to the ground
+            return;
+        }
+
+        let crab_bottom_right_leg = self
+            .left_leg
+            .0
+            .y
+            .max(self.right_leg.1.y)
+            .max(self.right_leg.2.y);
+
+        if crab_bottom_right_leg >= ground_level {
+            self.velocity_y = 0.0; // Stop falling
+            self.set_velocity_y(ground_level - crab_bottom_right_leg); // Snap to the ground
+        }
     }
 }
 
