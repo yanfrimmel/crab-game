@@ -154,6 +154,10 @@ impl Crab {
             // Collision detected: stop falling and adjust position
             self.velocity_y = 0.0; // Stop falling
             self.falling = false;
+            let crab_bottom = new_part.0.y.max(new_part.1.y).max(new_part.2.y);
+            let block_top = block_bounds.1;
+            let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
+            self.update_position_y(offset);
             true
         } else {
             // No collision: update position based on velocity
