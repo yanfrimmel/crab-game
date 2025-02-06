@@ -14,6 +14,8 @@ pub struct Crab {
     pub leg_rotate_speed: f32,
     pub velocity_y: f32,
     pub falling: bool,
+    pub jump_start: f64,
+    pub jump_current: f64,
 }
 
 pub struct Block {
@@ -44,6 +46,8 @@ impl Crab {
             leg_rotate_speed: 180.0,
             velocity_y: 0.0, // Initialize vertical velocity to 0
             falling: false,
+            jump_start: 0.0,
+            jump_current: 0.0,
         }
     }
 
@@ -162,7 +166,6 @@ impl Crab {
         } else {
             // No collision: update position based on velocity
             self.update_position_y(self.velocity_y * delta);
-            self.falling = true;
             false
         }
     }

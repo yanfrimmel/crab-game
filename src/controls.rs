@@ -2,16 +2,14 @@ use crate::helpers::triangle_rectangle_intersection;
 use crate::objects::Block;
 use crate::objects::Crab;
 use macroquad::prelude::Vec2;
-use macroquad::prelude::{is_key_down, KeyCode};
+use macroquad::prelude::{get_time, is_key_down, KeyCode};
 use std::f32::consts::PI;
 
-const SPEED: f32 = 7000.0;
+const JUMP_DURATION: f64 = 0.5;
+const JUMP_POWER: f32 = 400.0;
 
 pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
-    let distance = delta * SPEED;
-
     // Get the Block's bounds
-    let block_bounds = (block.x, block.y, block.w, block.h);
     // Rotate left leg with A and D keys
     if is_key_down(KeyCode::A) {
         let success = rotate_around(
@@ -70,12 +68,30 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
 
     // Jump
     if is_key_down(KeyCode::Space) && !crab.falling {
+        crab.jump_start = get_time();
+        crab.jump_current = crab.jump_start;
+        crab.falling = true;
+    }
+
+    if crab.falling {
+        jump(crab, block, delta);
+    }
+}
+
+pub fn jump(crab: &mut Crab, block: &Block, delta: f32) {
+    if crab.jump_current - crab.jump_start < JUMP_DURATION {
+        crab.jump_current += delta as f64;
+        let distance = delta * JUMP_POWER;
+        println!("Jump delta: {}", delta);
+        println!("Jump distance: {}", distance);
+
         let new_torso = (
             Vec2::new(crab.torso.0.x, crab.torso.0.y - distance),
             Vec2::new(crab.torso.1.x, crab.torso.1.y - distance),
             Vec2::new(crab.torso.2.x, crab.torso.2.y - distance),
         );
 
+        let block_bounds = (block.x, block.y, block.w, block.h);
         if !triangle_rectangle_intersection(new_torso, block_bounds) {
             crab.update_position_y(-distance);
         } else {
