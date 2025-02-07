@@ -5,8 +5,8 @@ use macroquad::prelude::Vec2;
 use macroquad::prelude::{get_time, is_key_down, KeyCode};
 use std::f32::consts::PI;
 
-const JUMP_DURATION: f64 = 0.5;
-const JUMP_POWER: f32 = 400.0;
+const JUMP_DURATION: f64 = 0.3;
+const JUMP_POWER: f32 = 800.0;
 
 pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     // Get the Block's bounds
