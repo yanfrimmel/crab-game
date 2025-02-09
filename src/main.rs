@@ -13,7 +13,6 @@ const SCALE: f32 = 1500.0;
 #[macroquad::main("crab-game")]
 async fn main() {
     let mut crab = Crab::new(SCALE, Vec2::new(screen_width() / 2.0, 0.0));
-
     let mut block = Block::new(
         SCALE,
         Vec2::new(screen_width() / 2.0, screen_height() * 3.0 / 4.0),

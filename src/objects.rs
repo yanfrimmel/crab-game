@@ -146,6 +146,58 @@ impl Crab {
             .max(self.right_leg.1.y)
             .max(self.right_leg.2.y);
         self.check_ground_collision(crab_bottom_right_leg);
+
+        // Check balance condition
+        let contact_points = self.count_contact_points(block);
+        if contact_points < 2 {
+            self.lose_balance(delta);
+        }
+    }
+
+    // Make the crab lose balance by tilting
+    fn lose_balance(&mut self, delta: f32) {
+        // Define the tilt angle (in radians) and the pivot point (center of the torso)
+        let tilt_angle = 0.5 * delta; // Adjust the tilt speed
+        let pivot = Vec2::new(
+            (self.torso.0.x + self.torso.1.x + self.torso.2.x) / 3.0, // Center X
+            (self.torso.0.y + self.torso.1.y + self.torso.2.y) / 3.0, // Center Y
+        );
+
+        // Rotate the torso points around the pivot
+        self.torso.0 = self.rotate_point(self.torso.0, pivot, tilt_angle);
+        self.torso.1 = self.rotate_point(self.torso.1, pivot, tilt_angle);
+        self.torso.2 = self.rotate_point(self.torso.2, pivot, tilt_angle);
+
+        // Rotate the left leg points around the pivot
+        self.left_leg.0 = self.rotate_point(self.left_leg.0, pivot, tilt_angle);
+        self.left_leg.1 = self.rotate_point(self.left_leg.1, pivot, tilt_angle);
+        self.left_leg.2 = self.rotate_point(self.left_leg.2, pivot, tilt_angle);
+
+        // Rotate the right leg points around the pivot
+        self.right_leg.0 = self.rotate_point(self.right_leg.0, pivot, tilt_angle);
+        self.right_leg.1 = self.rotate_point(self.right_leg.1, pivot, tilt_angle);
+        self.right_leg.2 = self.rotate_point(self.right_leg.2, pivot, tilt_angle);
+
+        // Increase falling speed to make the crab fall faster
+        self.velocity_y += GRAVITY * delta * 2.0;
+    }
+
+    // Helper function to rotate a point around a pivot
+    fn rotate_point(&self, point: Vec2, pivot: Vec2, angle: f32) -> Vec2 {
+        let sin = angle.sin();
+        let cos = angle.cos();
+
+        // Translate point back to origin
+        let translated_point = Vec2::new(point.x - pivot.x, point.y - pivot.y);
+
+        // Rotate point
+        let rotated_point = Vec2::new(
+            translated_point.x * cos - translated_point.y * sin,
+            translated_point.x * sin + translated_point.y * cos,
+        );
+
+        // Translate point back
+        Vec2::new(rotated_point.x + pivot.x, rotated_point.y + pivot.y)
     }
 
     fn check_block_collision(
@@ -183,6 +235,44 @@ impl Crab {
         } else {
             false // No collision
         }
+    }
+
+    // Count the number of contact points with the ground or block
+    pub fn count_contact_points(&self, block: &Block) -> usize {
+        let mut contact_points = 0;
+
+        // Check torso contact
+        let block_bounds = (block.x, block.y, block.w, block.h);
+        if triangle_rectangle_intersection(self.torso, block_bounds) {
+            contact_points += 1;
+        }
+
+        // Check left leg contact
+        if triangle_rectangle_intersection(self.left_leg, block_bounds) {
+            contact_points += 1;
+        }
+
+        // Check right leg contact
+        if triangle_rectangle_intersection(self.right_leg, block_bounds) {
+            contact_points += 1;
+        }
+
+        // Check ground contact
+        let ground_level = screen_height();
+        if self.torso.0.y >= ground_level
+            || self.torso.1.y >= ground_level
+            || self.torso.2.y >= ground_level
+            || self.left_leg.0.y >= ground_level
+            || self.left_leg.1.y >= ground_level
+            || self.left_leg.2.y >= ground_level
+            || self.right_leg.0.y >= ground_level
+            || self.right_leg.1.y >= ground_level
+            || self.right_leg.2.y >= ground_level
+        {
+            contact_points += 1;
+        }
+
+        contact_points
     }
 }
 
