@@ -156,6 +156,9 @@ impl Crab {
 
     // Make the crab lose balance by tilting
     fn lose_balance(&mut self, delta: f32) {
+        if self.falling {
+            return;
+        }
         // Define the tilt angle (in radians) and the pivot point (center of the torso)
         let tilt_angle = 0.5 * delta; // Adjust the tilt speed
         let pivot = Vec2::new(
