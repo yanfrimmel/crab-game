@@ -130,25 +130,19 @@ impl Crab {
 
         // Check if the new position collides with the Block
         let block_bounds = (block.x, block.y, block.w, block.h);
+
         // Handle collision for the left leg
-        if self.check_block_collision(new_left_leg, block_bounds, delta) {
-            return;
-        }
+        if self.check_block_collision(new_left_leg, block_bounds, delta) {}
         // Handle collision for the right leg
-        if self.check_block_collision(new_right_leg, block_bounds, delta) {
-            return;
-        }
+        if self.check_block_collision(new_right_leg, block_bounds, delta) {}
         // Handle collision for the torso
-        if self.check_block_collision(new_torso, block_bounds, delta) {
-            return;
-        }
+        if self.check_block_collision(new_torso, block_bounds, delta) {}
 
         // Check if the Crab has hit the ground
         // Check if the Crab's torso has hit the ground
         let crab_bottom_torso = self.torso.p0.y.max(self.torso.p1.y).max(self.torso.p2.y);
-        if self.check_ground_collision(crab_bottom_torso) {
-            return;
-        }
+
+        if self.check_ground_collision(crab_bottom_torso) {}
 
         // Check if the Crab's left leg has hit the ground
         let crab_bottom_left_leg = self
@@ -157,9 +151,7 @@ impl Crab {
             .y
             .max(self.left_leg.p1.y)
             .max(self.left_leg.p2.y);
-        if self.check_ground_collision(crab_bottom_left_leg) {
-            return;
-        }
+        if self.check_ground_collision(crab_bottom_left_leg) {}
 
         // Check if the Crab's right leg has hit the ground
         let crab_bottom_right_leg = self
@@ -168,7 +160,7 @@ impl Crab {
             .y
             .max(self.right_leg.p1.y)
             .max(self.right_leg.p2.y);
-        self.check_ground_collision(crab_bottom_right_leg);
+        if self.check_ground_collision(crab_bottom_right_leg) {}
 
         // Check balance condition
         let contact_points = self.count_contact_points(block);
@@ -184,11 +176,29 @@ impl Crab {
         }
         // Define the tilt angle (in radians) and the pivot point (center of the torso)
         let tilt_angle = 0.5 * delta; // Adjust the tilt speed
-        let pivot = Vec2::new(
+
+        let mut pivot = Vec2::new(
             (self.torso.p0.x + self.torso.p1.x + self.torso.p2.x) / 3.0, // Center X
             (self.torso.p0.y + self.torso.p1.y + self.torso.p2.y) / 3.0, // Center Y
         );
 
+        if self.left_leg.touching_ground {
+            pivot = self.left_leg.p2;
+            self.rotate_crab(tilt_angle, pivot);
+            println!("Left leg pivote");
+        }
+
+        if self.right_leg.touching_ground {
+            pivot = self.right_leg.p2;
+            self.rotate_crab(-tilt_angle, pivot);
+            println!("right leg pivote");
+        }
+
+        // Increase falling speed to make the crab fall faster
+        self.velocity_y += GRAVITY * delta * 10.0;
+    }
+
+    fn rotate_crab(&mut self, tilt_angle: f32, pivot: Vec2) {
         // Rotate the torso points around the pivot
         self.torso.p0 = self.rotate_point(self.torso.p0, pivot, tilt_angle);
         self.torso.p1 = self.rotate_point(self.torso.p1, pivot, tilt_angle);
@@ -203,9 +213,6 @@ impl Crab {
         self.right_leg.p0 = self.rotate_point(self.right_leg.p0, pivot, tilt_angle);
         self.right_leg.p1 = self.rotate_point(self.right_leg.p1, pivot, tilt_angle);
         self.right_leg.p2 = self.rotate_point(self.right_leg.p2, pivot, tilt_angle);
-
-        // Increase falling speed to make the crab fall faster
-        self.velocity_y += GRAVITY * delta * 2.0;
     }
 
     // Helper function to rotate a point around a pivot
@@ -264,23 +271,31 @@ impl Crab {
     }
 
     // Count the number of contact points with the ground or block
-    pub fn count_contact_points(&self, block: &Block) -> usize {
+    pub fn count_contact_points(&mut self, block: &Block) -> usize {
         let mut contact_points = 0;
+
+        self.torso.touching_ground = false;
+        self.right_leg.touching_ground = false;
+        self.left_leg.touching_ground = false;
 
         // Check torso contact
         let block_bounds = (block.x, block.y, block.w, block.h);
         if triangle_rectangle_intersection(self.torso.tuple(), block_bounds) {
+            self.torso.touching_ground = true;
             contact_points += 1;
         }
 
         // Check left leg contact
         if triangle_rectangle_intersection(self.left_leg.tuple(), block_bounds) {
             contact_points += 1;
+            self.left_leg.touching_ground = true;
         }
 
         // Check right leg contact
         if triangle_rectangle_intersection(self.right_leg.tuple(), block_bounds) {
             contact_points += 1;
+            self.right_leg.touching_ground = true;
+            println!("right leg touch block");
         }
 
         // Check ground contact
@@ -316,7 +331,7 @@ impl Block {
             x: position.x,
             y: position.y,
             h: scale * 0.1,
-            w: scale * 0.6,
+            w: scale * 0.5,
         }
     }
 }
