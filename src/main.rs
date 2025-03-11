@@ -24,7 +24,7 @@ async fn main() {
 
         draw_text(&format!("FPS: {}", 1. / delta), 20.0, 20.0, 30.0, DARKGRAY);
         draw_text(
-            &format!("x0: {} y0: {}", &crab.torso.0.x, &crab.torso.0.y),
+            &format!("x0: {} y0: {}", &crab.torso.p0.x, &crab.torso.p0.y),
             20.0,
             40.0,
             30.0,

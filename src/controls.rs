@@ -13,9 +13,9 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     // Rotate left leg with A and D keys
     if is_key_down(KeyCode::A) {
         let success = rotate_around(
-            &mut crab.left_leg.0,
-            &mut crab.left_leg.2,
-            crab.left_leg.1,
+            &mut crab.left_leg.p0,
+            &mut crab.left_leg.p2,
+            crab.left_leg.p1,
             crab.leg_rotate_speed,
             -delta,
             block,
@@ -26,9 +26,9 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     }
     if is_key_down(KeyCode::D) {
         let success = rotate_around(
-            &mut crab.left_leg.0,
-            &mut crab.left_leg.2,
-            crab.left_leg.1,
+            &mut crab.left_leg.p0,
+            &mut crab.left_leg.p2,
+            crab.left_leg.p1,
             crab.leg_rotate_speed,
             delta,
             block,
@@ -41,9 +41,9 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     // Rotate right leg with Left and Right arrow keys
     if is_key_down(KeyCode::Left) {
         let success = rotate_around(
-            &mut crab.right_leg.0,
-            &mut crab.right_leg.2,
-            crab.right_leg.1,
+            &mut crab.right_leg.p0,
+            &mut crab.right_leg.p2,
+            crab.right_leg.p1,
             crab.leg_rotate_speed,
             -delta,
             block,
@@ -54,9 +54,9 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     }
     if is_key_down(KeyCode::Right) {
         let success = rotate_around(
-            &mut crab.right_leg.0,
-            &mut crab.right_leg.2,
-            crab.right_leg.1,
+            &mut crab.right_leg.p0,
+            &mut crab.right_leg.p2,
+            crab.right_leg.p1,
             crab.leg_rotate_speed,
             delta,
             block,
@@ -86,9 +86,9 @@ pub fn jump(crab: &mut Crab, block: &Block, delta: f32) {
         println!("Jump distance: {}", distance);
 
         let new_torso = (
-            Vec2::new(crab.torso.0.x, crab.torso.0.y - distance),
-            Vec2::new(crab.torso.1.x, crab.torso.1.y - distance),
-            Vec2::new(crab.torso.2.x, crab.torso.2.y - distance),
+            Vec2::new(crab.torso.p0.x, crab.torso.p0.y - distance),
+            Vec2::new(crab.torso.p1.x, crab.torso.p1.y - distance),
+            Vec2::new(crab.torso.p2.x, crab.torso.p2.y - distance),
         );
 
         let block_bounds = (block.x, block.y, block.w, block.h);
