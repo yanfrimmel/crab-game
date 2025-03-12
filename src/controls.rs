@@ -11,7 +11,7 @@ const JUMP_POWER: f32 = 800.0;
 pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     // Get the Block's bounds
     // Rotate left leg with A and D keys
-    if is_key_down(KeyCode::A) {
+    if is_key_down(KeyCode::D) {
         let success = rotate_around(
             &mut crab.left_leg.p0,
             &mut crab.left_leg.p2,
@@ -24,7 +24,7 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
             println!("Left leg rotation blocked by collision!");
         }
     }
-    if is_key_down(KeyCode::D) {
+    if is_key_down(KeyCode::A) {
         let success = rotate_around(
             &mut crab.left_leg.p0,
             &mut crab.left_leg.p2,
@@ -39,7 +39,7 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     }
 
     // Rotate right leg with Left and Right arrow keys
-    if is_key_down(KeyCode::Left) {
+    if is_key_down(KeyCode::Right) {
         let success = rotate_around(
             &mut crab.right_leg.p0,
             &mut crab.right_leg.p2,
@@ -52,7 +52,7 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
             println!("Right leg rotation blocked by collision!");
         }
     }
-    if is_key_down(KeyCode::Right) {
+    if is_key_down(KeyCode::Left) {
         let success = rotate_around(
             &mut crab.right_leg.p0,
             &mut crab.right_leg.p2,
