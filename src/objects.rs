@@ -175,27 +175,25 @@ impl Crab {
             return;
         }
         // Define the tilt angle (in radians) and the pivot point (center of the torso)
-        let tilt_angle = 0.5 * delta; // Adjust the tilt speed
-
-        let mut pivot = Vec2::new(
-            (self.torso.p0.x + self.torso.p1.x + self.torso.p2.x) / 3.0, // Center X
-            (self.torso.p0.y + self.torso.p1.y + self.torso.p2.y) / 3.0, // Center Y
-        );
+        let tilt_angle = 1.0 * delta; // Adjust the tilt speed
 
         if self.left_leg.touching_ground {
-            pivot = self.left_leg.p2;
-            self.rotate_crab(tilt_angle, pivot);
+            self.rotate_crab(tilt_angle, self.left_leg.p2);
             println!("Left leg pivote");
-        }
-
-        if self.right_leg.touching_ground {
-            pivot = self.right_leg.p2;
-            self.rotate_crab(-tilt_angle, pivot);
+        } else if self.right_leg.touching_ground {
+            self.rotate_crab(-tilt_angle, self.right_leg.p2);
             println!("right leg pivote");
+        } else if self.torso.touching_ground {
+            if self.torso.p0.y > self.torso.p1.y {
+                self.rotate_crab(-tilt_angle, self.torso.p2);
+            } else {
+                self.rotate_crab(tilt_angle, self.torso.p2);
+            }
+            println!("torso pivote");
         }
 
         // Increase falling speed to make the crab fall faster
-        self.velocity_y += GRAVITY * delta * 10.0;
+        self.velocity_y += GRAVITY * delta * 20.0;
     }
 
     fn rotate_crab(&mut self, tilt_angle: f32, pivot: Vec2) {
@@ -331,13 +329,13 @@ impl Block {
             x: position.x,
             y: position.y,
             h: scale * 0.1,
-            w: scale * 0.5,
+            w: screen_width(),
         }
     }
 }
 
 impl Drawable for Block {
     fn draw(&mut self) {
-        draw_rectangle(self.x, self.y, self.w, self.h, GREEN);
+        draw_rectangle(self.x, self.y, self.w, self.h, LIME);
     }
 }
