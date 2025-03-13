@@ -119,13 +119,15 @@ impl Crab {
         // Check if the new position collides with the Block
         let block_bounds = (block.x, block.y, block.w, block.h);
 
-        // Handle collision for y
-        self.check_block_collision(block_bounds, delta);
-
         // Check balance condition
         let contact_points = self.count_contact_points(block);
         if contact_points == 1 {
             self.lose_balance(delta);
+            // Handle collision for y
+            self.check_block_collision(block_bounds, delta, true);
+        } else {
+            // Handle collision for y
+            self.check_block_collision(block_bounds, delta, false);
         }
     }
 
@@ -144,12 +146,28 @@ impl Crab {
             self.rotate_crab(-tilt_angle, self.right_leg.p2);
             println!("right leg pivote");
         } else if self.torso.touching_ground {
-            if self.torso.p0.y > self.torso.p1.y {
-                self.rotate_crab(-tilt_angle, self.torso.p2);
+            let mut left = self.torso.p0;
+            let mut right = self.torso.p1;
+            let mut lowest_pivot = self.torso.p2;
+
+            if self.torso.p0.y > self.torso.p1.y && self.torso.p0.y > self.torso.p2.y {
+                lowest_pivot = self.torso.p0;
+                left = self.torso.p1;
+                right = self.torso.p2;
+            } else if self.torso.p1.y > self.torso.p2.y {
+                lowest_pivot = self.torso.p1;
+                left = self.torso.p2;
+                right = self.torso.p0;
+            }
+
+            if left.y > right.y {
+                self.rotate_crab(-tilt_angle, lowest_pivot);
             } else {
-                self.rotate_crab(tilt_angle, self.torso.p2);
+                self.rotate_crab(tilt_angle, lowest_pivot);
             }
             println!("torso pivote");
+        } else {
+            println!("ERROR: no pivot!");
         }
 
         // Increase falling speed to make the crab fall faster
@@ -177,10 +195,12 @@ impl Crab {
         &mut self,
         block_bounds: (f32, f32, f32, f32), // Block's bounds (x, y, width, height)
         delta: f32,                         // Delta time for velocity calculation
+        rotation: bool,
     ) -> bool {
-        if self.check_part_block_collision(self.left_leg, block_bounds, delta)
-            || self.check_part_block_collision(self.right_leg, block_bounds, delta)
-            || self.check_part_block_collision(self.torso, block_bounds, delta)
+        if self.check_part_block_collision(self.left_leg, block_bounds, delta, rotation)
+            || self.check_part_block_collision(self.right_leg, block_bounds, delta, rotation)
+            // Torso should always fix cliping
+            || self.check_part_block_collision(self.torso, block_bounds, delta, false)
         {
             true;
         }
@@ -192,21 +212,26 @@ impl Crab {
         new_part: BodyPart,
         block_bounds: (f32, f32, f32, f32),
         delta: f32,
+        rotation: bool,
     ) -> bool {
         if triangle_rectangle_intersection(new_part.tuple(), block_bounds) {
             // Collision detected: stop falling and adjust position
             self.velocity_y = 0.0; // Stop falling
             self.falling = false;
-            let crab_bottom = new_part.p0.y.max(new_part.p1.y).max(new_part.p2.y);
-            let block_top = block_bounds.1;
-            let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
-            self.update_position_y(offset.floor());
-            // TODO: fix tremors
-            println!("triangle_rectangle_intersection offset: {}", offset);
+            if !rotation {
+                let crab_bottom = new_part.p0.y.max(new_part.p1.y).max(new_part.p2.y);
+                let block_top = block_bounds.1;
+                let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
+                self.update_position_y(offset.floor());
+                // TODO: fix tremors
+                println!("triangle_rectangle_intersection offset: {}", offset);
+            }
             true
         } else {
-            // No collision: update position based on velocity
-            self.update_position_y(self.velocity_y * delta);
+            if !rotation {
+                // No collision: update position based on velocity
+                self.update_position_y(self.velocity_y * delta);
+            }
             false
         }
     }
