@@ -119,10 +119,11 @@ pub fn rotate_around(
     let new_vec1_y = diff1.y * angle.cos() + diff1.x * angle.sin() + anchor.y;
 
     // Create a new triangle with the rotated points
+    let buffer = 10.0;
     let new_tri = (
-        Vec2::new(new_vec0_x, new_vec0_y),
-        Vec2::new(new_vec1_x, new_vec1_y),
-        anchor,
+        Vec2::new(new_vec0_x, new_vec0_y) - buffer,
+        Vec2::new(new_vec1_x, new_vec1_y) - buffer,
+        anchor - buffer,
     );
 
     // Check if the new triangle collides with the Block

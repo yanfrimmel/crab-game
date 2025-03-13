@@ -121,3 +121,21 @@ fn point_in_triangle(p: Vec2, tri: (Vec2, Vec2, Vec2)) -> bool {
 fn sign(p1: Vec2, p2: Vec2, p3: Vec2) -> f32 {
     (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y)
 }
+
+// Helper function to rotate a point around a pivot
+pub fn rotate_point(point: Vec2, pivot: Vec2, angle: f32) -> Vec2 {
+    let sin = angle.sin();
+    let cos = angle.cos();
+
+    // Translate point back to origin
+    let translated_point = Vec2::new(point.x - pivot.x, point.y - pivot.y);
+
+    // Rotate point
+    let rotated_point = Vec2::new(
+        translated_point.x * cos - translated_point.y * sin,
+        translated_point.x * sin + translated_point.y * cos,
+    );
+
+    // Translate point back
+    Vec2::new(rotated_point.x + pivot.x, rotated_point.y + pivot.y)
+}

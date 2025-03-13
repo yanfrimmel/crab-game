@@ -28,8 +28,8 @@ async fn main() {
     loop {
         let delta = get_frame_time();
         clear_background(GRAY);
-
-        draw_text(&format!("FPS: {}", 1. / delta), 20.0, 20.0, 20.0, YELLOW);
+        let fps = 1. / delta;
+        draw_text(&format!("FPS: {}", fps), 20.0, 20.0, 20.0, YELLOW);
         draw_text(
             &format!("Controls: <-, ->, A, D, space."),
             20.0,
