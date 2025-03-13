@@ -116,83 +116,16 @@ impl Crab {
     pub fn apply_gravity(&mut self, delta: f32, block: &Block) {
         self.velocity_y += GRAVITY * delta; // Update velocity based on gravity
 
-        // Calculate the new position of the Crab's torso
-        let new_torso = BodyPart::new(
-            Vec2::new(self.torso.p0.x, self.torso.p0.y + self.velocity_y * delta),
-            Vec2::new(self.torso.p1.x, self.torso.p1.y + self.velocity_y * delta),
-            Vec2::new(self.torso.p2.x, self.torso.p2.y + self.velocity_y * delta),
-        );
-
-        let new_left_leg = BodyPart::new(
-            Vec2::new(
-                self.left_leg.p0.x,
-                self.left_leg.p0.y + self.velocity_y * delta,
-            ),
-            Vec2::new(
-                self.left_leg.p1.x,
-                self.left_leg.p1.y + self.velocity_y * delta,
-            ),
-            Vec2::new(
-                self.left_leg.p2.x,
-                self.left_leg.p2.y + self.velocity_y * delta,
-            ),
-        );
-
-        let new_right_leg = BodyPart::new(
-            Vec2::new(
-                self.right_leg.p0.x,
-                self.right_leg.p0.y + self.velocity_y * delta,
-            ),
-            Vec2::new(
-                self.right_leg.p1.x,
-                self.right_leg.p1.y + self.velocity_y * delta,
-            ),
-            Vec2::new(
-                self.right_leg.p2.x,
-                self.right_leg.p2.y + self.velocity_y * delta,
-            ),
-        );
-
         // Check if the new position collides with the Block
         let block_bounds = (block.x, block.y, block.w, block.h);
 
-        // Handle collision for the left leg
-        if self.check_block_collision(new_left_leg, block_bounds, delta) {
-            // Check balance condition
-            let contact_points = self.count_contact_points(block);
-            if contact_points == 1 {
-                self.lose_balance(delta);
-            }
-            println!("left leg collision");
-            return;
-        }
-        // Handle collision for the right leg
-        if self.check_block_collision(new_right_leg, block_bounds, delta) {
-            // Check balance condition
-            let contact_points = self.count_contact_points(block);
-            if contact_points == 1 {
-                self.lose_balance(delta);
-            }
-            println!("right leg collision");
-            return;
-        }
-        // Handle collision for the torso
-        if self.check_block_collision(new_torso, block_bounds, delta) {
-            // Check balance condition
-            let contact_points = self.count_contact_points(block);
-            if contact_points == 1 {
-                self.lose_balance(delta);
-            }
-
-            println!("torso collision");
-            return;
-        }
+        // Handle collision for y
+        self.check_block_collision(block_bounds, delta);
 
         // Check balance condition
         let contact_points = self.count_contact_points(block);
         if contact_points == 1 {
             self.lose_balance(delta);
-            println!("NO collision  !!!!!");
         }
     }
 
@@ -242,9 +175,23 @@ impl Crab {
 
     fn check_block_collision(
         &mut self,
-        new_part: BodyPart,                 // New position of the part (triangle)
         block_bounds: (f32, f32, f32, f32), // Block's bounds (x, y, width, height)
         delta: f32,                         // Delta time for velocity calculation
+    ) -> bool {
+        if self.check_part_block_collision(self.left_leg, block_bounds, delta)
+            || self.check_part_block_collision(self.right_leg, block_bounds, delta)
+            || self.check_part_block_collision(self.torso, block_bounds, delta)
+        {
+            true;
+        }
+        false
+    }
+
+    fn check_part_block_collision(
+        &mut self,
+        new_part: BodyPart,
+        block_bounds: (f32, f32, f32, f32),
+        delta: f32,
     ) -> bool {
         if triangle_rectangle_intersection(new_part.tuple(), block_bounds) {
             // Collision detected: stop falling and adjust position
