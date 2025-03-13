@@ -1,14 +1,14 @@
 # Crab Game
 
-A simple 2D game where you control a crab and navigate it through obstacles. The game is built using Rust and the Macroquad game framework.
+A simple 2D game where you control a crab by moving its legs. The game is built using Rust and the Macroquad game framework.
 
 [WASM version - in development](https://yanfrimmel.github.io/crab-game/)
 
 ## Features
 - Control the each of crab's legs to move and rotate.
 - Gravity simulation for realistic movement.
-- Collision detection with blocks and the ground.
-- Jump
+- Collision detection.
+- Jump.
 
 ## Prerequisites
 
@@ -57,4 +57,4 @@ sh runWasm.sh
 - **Left Arrow / Right Arrow**: Rotate the right leg.
 - **Up Arrow**: Move the crab upward.
 - **Down Arrow**: Move the crab downward.
-- **Space**: Jump
+- **Space**: Jump.
