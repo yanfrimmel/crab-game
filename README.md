@@ -55,6 +55,4 @@ sh runWasm.sh
 
 - **A / D**: Rotate the left leg.
 - **Left Arrow / Right Arrow**: Rotate the right leg.
-- **Up Arrow**: Move the crab upward.
-- **Down Arrow**: Move the crab downward.
 - **Space**: Jump.
