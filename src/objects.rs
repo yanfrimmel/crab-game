@@ -1,7 +1,11 @@
-use crate::helpers::{rotate_point, triangle_rectangle_intersection};
+use crate::helpers::{
+    rotate_point, triangle_rectangle_intersection, triangle_triangle_intersection,
+};
 use macroquad::prelude::*;
 
 const GRAVITY: f32 = 200.0; // Acceleration due to gravity (pixels per second squared)
+const LEFT_LEG_ID: usize = 1;
+const RIGHT_LEG_ID: usize = 2;
 
 pub trait Drawable {
     fn draw(&mut self);
@@ -33,6 +37,7 @@ impl Drawable for Block {
 
 #[derive(Clone, Copy)]
 pub struct BodyPart {
+    pub id: usize,
     pub p0: Vec2,
     pub p1: Vec2,
     pub p2: Vec2,
@@ -40,8 +45,9 @@ pub struct BodyPart {
 }
 
 impl BodyPart {
-    pub fn new(part0: Vec2, part1: Vec2, part2: Vec2) -> Self {
+    pub fn new(p_id: usize, part0: Vec2, part1: Vec2, part2: Vec2) -> Self {
         Self {
+            id: p_id,
             p0: part0,
             p1: part1,
             p2: part2,
@@ -54,6 +60,7 @@ impl BodyPart {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Crab {
     pub torso: BodyPart,
     pub left_leg: BodyPart,
@@ -77,16 +84,19 @@ impl Crab {
     pub fn new(scale: f32, position: Vec2) -> Self {
         Self {
             torso: BodyPart::new(
+                0,
                 Vec2::new(0.0, 0.0) * scale + position,
                 Vec2::new(0.2, 0.0) * scale + position,
                 Vec2::new(0.1, 0.1) * scale + position,
             ),
             left_leg: BodyPart::new(
+                LEFT_LEG_ID,
                 Vec2::new(0.025, 0.05) * scale + position,
                 Vec2::new(0.05, 0.05) * scale + position,
                 Vec2::new(0.0375, 0.175) * scale + position,
             ),
             right_leg: BodyPart::new(
+                RIGHT_LEG_ID,
                 Vec2::new(0.175, 0.05) * scale + position,
                 Vec2::new(0.15, 0.05) * scale + position,
                 Vec2::new(0.1625, 0.175) * scale + position,
@@ -124,10 +134,10 @@ impl Crab {
         if contact_points == 1 {
             self.lose_balance(delta);
             // Handle collision for y
-            self.check_block_collision(block_bounds, delta, true);
+            self.check_collision(block_bounds, delta, true);
         } else {
             // Handle collision for y
-            self.check_block_collision(block_bounds, delta, false);
+            self.check_collision(block_bounds, delta, false);
         }
     }
 
@@ -191,7 +201,7 @@ impl Crab {
         self.right_leg.p2 = rotate_point(self.right_leg.p2, pivot, tilt_angle);
     }
 
-    fn check_block_collision(
+    fn check_collision(
         &mut self,
         block_bounds: (f32, f32, f32, f32), // Block's bounds (x, y, width, height)
         delta: f32,                         // Delta time for velocity calculation
@@ -204,6 +214,29 @@ impl Crab {
         {
             true;
         }
+
+        false
+    }
+
+    pub fn body_collision(self, part_id: usize, new_tri: (Vec2, Vec2, Vec2)) -> bool {
+        match part_id {
+            LEFT_LEG_ID => {
+                if triangle_triangle_intersection(self.right_leg.tuple(), new_tri) > 1
+                    || triangle_triangle_intersection(self.torso.tuple(), new_tri) > 1
+                {
+                    return true;
+                }
+            }
+            RIGHT_LEG_ID => {
+                if triangle_triangle_intersection(self.torso.tuple(), new_tri) > 1
+                    || triangle_triangle_intersection(self.left_leg.tuple(), new_tri) > 1
+                {
+                    return true;
+                }
+            }
+            _ => {}
+        }
+
         false
     }
 

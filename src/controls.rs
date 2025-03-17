@@ -1,5 +1,6 @@
 use crate::helpers::triangle_rectangle_intersection;
 use crate::objects::Block;
+use crate::objects::BodyPart;
 use crate::objects::Crab;
 use macroquad::prelude::Vec2;
 use macroquad::prelude::{get_time, is_key_down, KeyCode};
@@ -13,9 +14,8 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     // Rotate left leg with A and D keys
     if is_key_down(KeyCode::D) {
         let success = rotate_around(
-            &mut crab.left_leg.p0,
-            &mut crab.left_leg.p2,
-            crab.left_leg.p1,
+            crab.clone(),
+            &mut crab.left_leg,
             crab.leg_rotate_speed,
             -delta,
             block,
@@ -26,9 +26,8 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     }
     if is_key_down(KeyCode::A) {
         let success = rotate_around(
-            &mut crab.left_leg.p0,
-            &mut crab.left_leg.p2,
-            crab.left_leg.p1,
+            crab.clone(),
+            &mut crab.left_leg,
             crab.leg_rotate_speed,
             delta,
             block,
@@ -41,9 +40,8 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     // Rotate right leg with Left and Right arrow keys
     if is_key_down(KeyCode::Right) {
         let success = rotate_around(
-            &mut crab.right_leg.p0,
-            &mut crab.right_leg.p2,
-            crab.right_leg.p1,
+            crab.clone(),
+            &mut crab.right_leg,
             crab.leg_rotate_speed,
             -delta,
             block,
@@ -54,9 +52,8 @@ pub fn player_movement(crab: &mut Crab, block: &Block, delta: f32) {
     }
     if is_key_down(KeyCode::Left) {
         let success = rotate_around(
-            &mut crab.right_leg.p0,
-            &mut crab.right_leg.p2,
-            crab.right_leg.p1,
+            crab.clone(),
+            &mut crab.right_leg,
             crab.leg_rotate_speed,
             delta,
             block,
@@ -101,13 +98,16 @@ pub fn jump(crab: &mut Crab, block: &Block, delta: f32) {
 }
 
 pub fn rotate_around(
-    vec0: &mut Vec2,
-    vec1: &mut Vec2,
-    anchor: Vec2,
+    crab: Crab,
+    part: &mut BodyPart,
     degrees: f32,
     delta: f32,
     block: &Block,
 ) -> bool {
+    let vec0 = &mut part.p0;
+    let vec1 = &mut part.p2;
+    let anchor = part.p1;
+
     let angle: f32 = degrees * PI / 180.0 * delta;
     let diff0 = *vec0 - anchor;
     let diff1 = *vec1 - anchor;
@@ -128,7 +128,7 @@ pub fn rotate_around(
 
     // Check if the new triangle collides with the Block
     let rect = (block.x, block.y, block.w, block.h);
-    if !triangle_rectangle_intersection(new_tri, rect) {
+    if !triangle_rectangle_intersection(new_tri, rect) && !crab.body_collision(part.id, new_tri) {
         // No collision, apply the rotation
         vec0.x = new_vec0_x;
         vec0.y = new_vec0_y;
