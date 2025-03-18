@@ -13,8 +13,8 @@ const SCALE: f32 = 1500.0;
 fn window_conf() -> Conf {
     Conf {
         window_title: "Crab Game".to_owned(),
-        window_width: 1920,
-        window_height: 1080,
+        window_width: 1000,
+        window_height: 800,
         fullscreen: false,
         ..Default::default()
     }

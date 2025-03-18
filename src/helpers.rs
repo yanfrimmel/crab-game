@@ -35,20 +35,20 @@ pub fn line_segment_intersection(p1: Vec2, p2: Vec2, p3: Vec2, p4: Vec2) -> bool
 // Check if two triangles intersect
 pub fn triangle_triangle_intersection(tri1: (Vec2, Vec2, Vec2), tri2: (Vec2, Vec2, Vec2)) -> usize {
     let mut result: usize = 0;
-    //// Triangle 1's three edges
-    //let tri1_edges = [(tri1.0, tri1.1), (tri1.1, tri1.2), (tri1.2, tri1.0)];
-    //
-    //// Triangle 2's three edges
-    //let tri2_edges = [(tri2.0, tri2.1), (tri2.1, tri2.2), (tri2.2, tri2.0)];
-    //
-    //// Check if any edge of triangle 1 intersects with any edge of triangle 2
-    //for tri1_edge in &tri1_edges {
-    //    for tri2_edge in &tri2_edges {
-    //        if line_segment_intersection(tri1_edge.0, tri1_edge.1, tri2_edge.0, tri2_edge.1) {
-    //            result += 1;
-    //        }
-    //    }
-    //}
+    // Triangle 1's three edges
+    let tri1_edges = [(tri1.0, tri1.1), (tri1.1, tri1.2), (tri1.2, tri1.0)];
+
+    // Triangle 2's three edges
+    let tri2_edges = [(tri2.0, tri2.1), (tri2.1, tri2.2), (tri2.2, tri2.0)];
+
+    // Check if any edge of triangle 1 intersects with any edge of triangle 2
+    for tri1_edge in &tri1_edges {
+        for tri2_edge in &tri2_edges {
+            if line_segment_intersection(tri1_edge.0, tri1_edge.1, tri2_edge.0, tri2_edge.1) {
+                result += 1;
+            }
+        }
+    }
 
     // Check if any vertex of triangle 1 is inside triangle 2
     for vertex in [tri1.0, tri1.1, tri1.2] {

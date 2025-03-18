@@ -2,6 +2,8 @@ use crate::helpers::triangle_rectangle_intersection;
 use crate::objects::Block;
 use crate::objects::BodyPart;
 use crate::objects::Crab;
+use crate::objects::LEFT_LEG_ID;
+use crate::objects::RIGHT_LEG_ID;
 use macroquad::prelude::Vec2;
 use macroquad::prelude::{get_time, is_key_down, KeyCode};
 use std::f32::consts::PI;
@@ -104,9 +106,24 @@ pub fn rotate_around(
     delta: f32,
     block: &Block,
 ) -> bool {
-    let vec0 = &mut part.p0;
-    let vec1 = &mut part.p2;
-    let anchor = part.p1;
+    let vec0: &mut Vec2;
+    let vec1: &mut Vec2;
+    let anchor: Vec2;
+    match part.id {
+        LEFT_LEG_ID => {
+            vec0 = &mut part.p0;
+            vec1 = &mut part.p2;
+            anchor = part.p1;
+        }
+        RIGHT_LEG_ID => {
+            vec0 = &mut part.p1;
+            vec1 = &mut part.p2;
+            anchor = part.p0;
+        }
+        _ => {
+            unreachable!("invalid body part id!")
+        }
+    }
 
     let angle: f32 = degrees * PI / 180.0 * delta;
     let diff0 = *vec0 - anchor;
@@ -119,11 +136,12 @@ pub fn rotate_around(
     let new_vec1_y = diff1.y * angle.cos() + diff1.x * angle.sin() + anchor.y;
 
     // Create a new triangle with the rotated points
+    // buffer to make legs "slide" on ground
     let buffer = 10.0;
     let new_tri = (
-        Vec2::new(new_vec0_x, new_vec0_y) - buffer,
+        Vec2::new(new_vec0_x, new_vec0_y),
         Vec2::new(new_vec1_x, new_vec1_y) - buffer,
-        anchor - buffer,
+        anchor,
     );
 
     // Check if the new triangle collides with the Block

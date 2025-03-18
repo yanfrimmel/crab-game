@@ -4,8 +4,9 @@ use crate::helpers::{
 use macroquad::prelude::*;
 
 const GRAVITY: f32 = 200.0; // Acceleration due to gravity (pixels per second squared)
-const LEFT_LEG_ID: usize = 1;
-const RIGHT_LEG_ID: usize = 2;
+pub const LEFT_LEG_ID: usize = 1;
+pub const RIGHT_LEG_ID: usize = 2;
+const LEG_GAP: f32 = 0.005;
 
 pub trait Drawable {
     fn draw(&mut self);
@@ -91,17 +92,17 @@ impl Crab {
             ),
             left_leg: BodyPart::new(
                 LEFT_LEG_ID,
-                Vec2::new(0.025, 0.05) * scale + position,
-                Vec2::new(0.05, 0.05) * scale + position,
+                Vec2::new(0.025, 0.05 + LEG_GAP) * scale + position,
+                Vec2::new(0.05, 0.05 + LEG_GAP) * scale + position,
                 Vec2::new(0.0375, 0.175) * scale + position,
             ),
             right_leg: BodyPart::new(
                 RIGHT_LEG_ID,
-                Vec2::new(0.175, 0.05) * scale + position,
-                Vec2::new(0.15, 0.05) * scale + position,
+                Vec2::new(0.15, 0.05 + LEG_GAP) * scale + position,
+                Vec2::new(0.175, 0.05 + LEG_GAP) * scale + position,
                 Vec2::new(0.1625, 0.175) * scale + position,
             ),
-            leg_rotate_speed: 180.0,
+            leg_rotate_speed: 200.0,
             velocity_y: 0.0, // Initialize vertical velocity to 0
             falling: false,
             jump_start: 0.0,
@@ -151,10 +152,10 @@ impl Crab {
 
         if self.left_leg.touching_ground {
             self.rotate_crab(tilt_angle, self.left_leg.p2);
-            println!("Left leg pivote");
+            //println!("Left leg pivote");
         } else if self.right_leg.touching_ground {
             self.rotate_crab(-tilt_angle, self.right_leg.p2);
-            println!("right leg pivote");
+            //println!("right leg pivote");
         } else if self.torso.touching_ground {
             let mut left = self.torso.p0;
             let mut right = self.torso.p1;
@@ -175,7 +176,7 @@ impl Crab {
             } else {
                 self.rotate_crab(tilt_angle, lowest_pivot);
             }
-            println!("torso pivote");
+            //println!("torso pivote");
         } else {
             println!("ERROR: no pivot!");
         }
@@ -231,6 +232,7 @@ impl Crab {
                 if triangle_triangle_intersection(self.torso.tuple(), new_tri) > 1
                     || triangle_triangle_intersection(self.left_leg.tuple(), new_tri) > 1
                 {
+                    println!("RIGHT LEG body collision");
                     return true;
                 }
             }
@@ -257,7 +259,7 @@ impl Crab {
                 let offset = block_top - crab_bottom; // Adjust position to sit on top of the Block
                 self.update_position_y(offset.floor());
                 // TODO: fix tremors
-                println!("triangle_rectangle_intersection offset: {}", offset);
+                //println!("triangle_rectangle_intersection offset: {}", offset);
             }
             true
         } else {
