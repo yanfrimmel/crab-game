@@ -23,7 +23,7 @@ Before running the game, ensure you have the following installed:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/crab-game.git
+   git clone https://github.com/yanfrimmel/crab-game.git
    cd crab-game
    ```
 
